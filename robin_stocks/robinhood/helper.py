@@ -165,7 +165,7 @@ def round_price(price):
     return returnPrice
 
 
-def filter_data(data, info):
+def filter_data(data, info, where=None):
     """Takes the data and extracts the value for the keyword(s) that match info.
 
     :param data: The data returned by request_get.
@@ -173,6 +173,9 @@ def filter_data(data, info):
     :param info: The keyword(s) to filter from the data. Can be a string for a single key,
                  or a list/tuple of strings for multiple keys.
     :type info: str or list or tuple
+    :param where: Optional filtering conditions. A dict of key-value pairs to filter rows.
+                  Example: where={'symbol': 'AAPL'} or where={'symbol': 'AAPL', 'side': 'buy'}
+    :type where: dict or None
     :returns:  A list or string with the values that correspond to the info keyword(s).
                If info is a list/tuple, returns dict(s) with only the specified keys.
 
@@ -189,6 +192,23 @@ def filter_data(data, info):
     elif (type(data) == dict):
         compareDict = data
         noneType = None
+
+    # Apply where filter if provided
+    if where is not None and isinstance(where, dict):
+        if type(data) == list:
+            # Filter list items that match ALL where conditions
+            for key, value in where.items():
+                data = [item for item in data if item.get(key) == value]
+            # Update compareDict if we still have data
+            if len(data) > 0:
+                compareDict = data[0]
+            else:
+                return([])
+        elif type(data) == dict:
+            # For single dict, check if it matches all conditions
+            for key, value in where.items():
+                if data.get(key) != value:
+                    return(noneType)
 
     if info is not None:
         # Handle multiple keys (list or tuple)

@@ -5,6 +5,8 @@ import robin_stocks.robinhood as r
 import pyotp
 import pytest
 from dateutil.relativedelta import relativedelta
+from robin_stocks.robinhood.helper import filter_data
+
 
 def third_friday(year, month, day):
     """Return datetime.date for monthly option expiration given year and
@@ -34,6 +36,7 @@ def round_up_price(ticker, multiplier):
     num = price + (multiplier - 1)
     return num - (num % multiplier)
 
+
 class TestStocks:
 
     # Set up variables for class
@@ -48,8 +51,9 @@ class TestStocks:
 
     @classmethod
     def setup_class(cls):
-        totp  = pyotp.TOTP(os.environ['robin_mfa']).now()
-        login = r.login(os.environ['robin_username'], os.environ['robin_password'], mfa_code=totp)
+        totp = pyotp.TOTP(os.environ['robin_mfa']).now()
+        login = r.login(os.environ['robin_username'],
+                        os.environ['robin_password'], mfa_code=totp)
 
     @classmethod
     def teardown_class(cls):
@@ -81,7 +85,7 @@ class TestStocks:
         assert ('instrument' in quote)
         #
         more_quotes = r.get_quotes(self.list_stocks, info=None)
-        assert (len(more_quotes) ==  len(self.list_stocks))
+        assert (len(more_quotes) == len(self.list_stocks))
         #
         fake_quotes = r.get_quotes(self.fake_stocks, info=None)
         assert (len(fake_quotes) == 1)
@@ -287,12 +291,16 @@ class TestStocks:
         assert (len(fake_split) == 0)
 
     def test_stock_historicals(self):
-        historicals = r.get_stock_historicals(self.single_stock, interval='hour', span='day', bounds='regular', info=None)
-        assert (len(historicals) <= 6) # 6 regular hours in a day
-        historicals = r.get_stock_historicals(self.single_stock, interval='hour', span='day', bounds='trading', info=None)
-        assert (len(historicals) <= 9) # 9 trading hours total in a day
-        historicals = r.get_stock_historicals(self.single_stock, interval='hour', span='day', bounds='extended', info=None)
-        assert (len(historicals) <= 16) # 16 extended hours total in a day
+        historicals = r.get_stock_historicals(
+            self.single_stock, interval='hour', span='day', bounds='regular', info=None)
+        assert (len(historicals) <= 6)  # 6 regular hours in a day
+        historicals = r.get_stock_historicals(
+            self.single_stock, interval='hour', span='day', bounds='trading', info=None)
+        assert (len(historicals) <= 9)  # 9 trading hours total in a day
+        historicals = r.get_stock_historicals(
+            self.single_stock, interval='hour', span='day', bounds='extended', info=None)
+        assert (len(historicals) <= 16)  # 16 extended hours total in a day
+
 
 class TestCrypto:
 
@@ -305,8 +313,9 @@ class TestCrypto:
 
     @classmethod
     def setup_class(cls):
-        totp  = pyotp.TOTP(os.environ['robin_mfa']).now()
-        login = r.login(os.environ['robin_username'], os.environ['robin_password'], mfa_code=totp)
+        totp = pyotp.TOTP(os.environ['robin_mfa']).now()
+        login = r.login(os.environ['robin_username'],
+                        os.environ['robin_password'], mfa_code=totp)
 
     @classmethod
     def teardown_class(cls):
@@ -377,7 +386,8 @@ class TestCrypto:
         assert (crypto == None)
 
     def test_crypto_historicals(self):
-        crypto = r.get_crypto_historicals(self.bitcoin, 'day', 'week', '24_7', info=None)
+        crypto = r.get_crypto_historicals(
+            self.bitcoin, 'day', 'week', '24_7', info=None)
         assert (len(crypto) == 7)
         first_point = crypto[0]
         # check keys
@@ -390,30 +400,38 @@ class TestCrypto:
         assert ('session' in first_point)
         assert ('interpolated' in first_point)
         #
-        crypto = r.get_crypto_historicals(self.bitcoin, 'hour', 'day', 'regular', info=None)
-        assert (len(crypto) <= 6) # 6 regular hours in a day
-        crypto = r.get_crypto_historicals(self.bitcoin, 'hour', 'day', 'trading', info=None)
-        assert (len(crypto) <= 9) # 9 trading hours in a day
-        crypto = r.get_crypto_historicals(self.bitcoin, 'hour', 'day', 'extended', info=None)
-        assert (len(crypto) <= 16) # 16 extended hours in a day
-        crypto = r.get_crypto_historicals(self.bitcoin, 'hour', 'day', '24_7', info=None)
-        assert (len(crypto) <= 24) # 24 24_7 hours in a day
+        crypto = r.get_crypto_historicals(
+            self.bitcoin, 'hour', 'day', 'regular', info=None)
+        assert (len(crypto) <= 6)  # 6 regular hours in a day
+        crypto = r.get_crypto_historicals(
+            self.bitcoin, 'hour', 'day', 'trading', info=None)
+        assert (len(crypto) <= 9)  # 9 trading hours in a day
+        crypto = r.get_crypto_historicals(
+            self.bitcoin, 'hour', 'day', 'extended', info=None)
+        assert (len(crypto) <= 16)  # 16 extended hours in a day
+        crypto = r.get_crypto_historicals(
+            self.bitcoin, 'hour', 'day', '24_7', info=None)
+        assert (len(crypto) <= 24)  # 24 24_7 hours in a day
+
 
 class TestOptions:
 
     # have to login to use round_up_price
-    totp  = pyotp.TOTP(os.environ['robin_mfa']).now()
-    login = r.login(os.environ['robin_username'], os.environ['robin_password'], mfa_code=totp)
+    totp = pyotp.TOTP(os.environ['robin_mfa']).now()
+    login = r.login(os.environ['robin_username'],
+                    os.environ['robin_password'], mfa_code=totp)
     #
     now = datetime.datetime.now() + relativedelta(months=1)
-    expiration_date = third_friday(now.year, now.month, now.day).strftime("%Y-%m-%d")
+    expiration_date = third_friday(
+        now.year, now.month, now.day).strftime("%Y-%m-%d")
     symbol = 'AAPL'
     strike = round_up_price(symbol, 10)
 
     @classmethod
     def setup_class(cls):
-        totp  = pyotp.TOTP(os.environ['robin_mfa']).now()
-        login = r.login(os.environ['robin_username'], os.environ['robin_password'], mfa_code=totp)
+        totp = pyotp.TOTP(os.environ['robin_mfa']).now()
+        login = r.login(os.environ['robin_username'],
+                        os.environ['robin_password'], mfa_code=totp)
 
     @classmethod
     def teardown_class(cls):
@@ -424,31 +442,38 @@ class TestOptions:
         first = info[0]
         assert (first['expiration_date'] == self.expiration_date)
         assert (len(info) > 50)
-        info = r.find_options_by_expiration(self.symbol, self.expiration_date, info='strike_price')
+        info = r.find_options_by_expiration(
+            self.symbol, self.expiration_date, info='strike_price')
         first = info[0]
         assert (type(first) == str)
         assert (len(info) > 50)
-        info = r.find_options_by_expiration(self.symbol, self.expiration_date, info='expiration_date')
+        info = r.find_options_by_expiration(
+            self.symbol, self.expiration_date, info='expiration_date')
         assert (len(set(info)) == 1)
 
     def test_find_options_by_strike(self):
         info = r.find_options_by_strike(self.symbol, self.strike)
         assert (len(info) >= 24)
-        info = r.find_options_by_strike(self.symbol, self.strike,'call')
+        info = r.find_options_by_strike(self.symbol, self.strike, 'call')
         assert (info[0]['type'] == 'call')
-        info = r.find_options_by_strike(self.symbol, self.strike, info='expiration_date')
+        info = r.find_options_by_strike(
+            self.symbol, self.strike, info='expiration_date')
         assert (len(set(info)) > 1)
-        info = r.find_options_by_strike(self.symbol, self.strike, info='strike_price')
+        info = r.find_options_by_strike(
+            self.symbol, self.strike, info='strike_price')
         assert (len(set(info)) == 1)
 
     def test_find_options_by_expiration_and_strike(self):
-        info = r.find_options_by_expiration_and_strike(self.symbol, self.expiration_date, self.strike)
+        info = r.find_options_by_expiration_and_strike(
+            self.symbol, self.expiration_date, self.strike)
         assert (len(info) == 2)
         assert (info[0]['expiration_date'] == self.expiration_date)
         assert (float(info[0]['strike_price']) == self.strike)
-        info = r.find_options_by_expiration_and_strike(self.symbol, self.expiration_date, self.strike, 'call')
+        info = r.find_options_by_expiration_and_strike(
+            self.symbol, self.expiration_date, self.strike, 'call')
         assert (len(info) == 1)
         assert (info[0]['type'] == 'call')
+
 
 class TestMarkets:
 
@@ -461,8 +486,9 @@ class TestMarkets:
 
     @classmethod
     def setup_class(cls):
-        totp  = pyotp.TOTP(os.environ['robin_mfa']).now()
-        login = r.login(os.environ['robin_username'], os.environ['robin_password'], mfa_code=totp)
+        totp = pyotp.TOTP(os.environ['robin_mfa']).now()
+        login = r.login(os.environ['robin_username'],
+                        os.environ['robin_password'], mfa_code=totp)
 
     @classmethod
     def teardown_class(cls):
@@ -520,12 +546,14 @@ class TestMarkets:
         assert ('description' in first)
         assert ('market_hours_last_movement_pct' in first['price_movement'])
         assert ('market_hours_last_price' in first['price_movement'])
-        assert (float(first['price_movement']['market_hours_last_movement_pct']) > 0)
+        assert (float(first['price_movement']
+                ['market_hours_last_movement_pct']) > 0)
         # going down
         movers = r.get_top_movers_sp500('down')
         assert (movers)
         first = movers[0]
-        assert (float(first['price_movement']['market_hours_last_movement_pct']) < 0)
+        assert (float(first['price_movement']
+                ['market_hours_last_movement_pct']) < 0)
 
     def test_get_all_stocks_from_market_tag(self):
         movers = r.get_all_stocks_from_market_tag('technology')
@@ -585,7 +613,8 @@ class TestMarkets:
         assert ('next_open_hours' in market)
 
     def test_get_market_next_open_hours_after_date(self):
-        market = r.get_market_next_open_hours_after_date(self.nasdaq, self.today)
+        market = r.get_market_next_open_hours_after_date(
+            self.nasdaq, self.today)
         assert ('date' in market)
         assert ('is_open' in market)
         assert ('opens_at' in market)
@@ -632,11 +661,13 @@ class TestMarkets:
         market = r.get_market_hours(self.nasdaq, self.american_time)
         assert market
 
+
 class TestProfiles:
     @classmethod
     def setup_class(cls):
-        totp  = pyotp.TOTP(os.environ['robin_mfa']).now()
-        login = r.login(os.environ['robin_username'], os.environ['robin_password'], mfa_code=totp)
+        totp = pyotp.TOTP(os.environ['robin_mfa']).now()
+        login = r.login(os.environ['robin_username'],
+                        os.environ['robin_password'], mfa_code=totp)
 
     @classmethod
     def teardown_class(cls):
@@ -814,12 +845,14 @@ class TestProfiles:
         profile = r.load_account_profile(info=None)
         assert profile
 
+
 class TestOrders:
     @classmethod
     def setup_class(cls):
-        totp  = pyotp.TOTP(os.environ['robin_mfa']).now()
-        login = r.login(os.environ['robin_username'], os.environ['robin_password'], mfa_code=totp)
-    
+        totp = pyotp.TOTP(os.environ['robin_mfa']).now()
+        login = r.login(os.environ['robin_username'],
+                        os.environ['robin_password'], mfa_code=totp)
+
     def test_find_stock_orders(cls):
         def isFloat(f):
             try:
@@ -834,15 +867,17 @@ class TestOrders:
         for order in orderHistory:
             assert isFloat(order['quantity'])
             assert isFloat(order['cumulative_quantity'])
-            if(order['state'] == 'filled'):
+            if (order['state'] == 'filled'):
                 assert (order['quantity'] == order['cumulative_quantity'])
-                
+
+
 class TestAccountInformation:
     @classmethod
     def setup_class(cls):
-        totp  = pyotp.TOTP(os.environ['robin_mfa']).now()
-        login = r.login(os.environ['robin_username'], os.environ['robin_password'], mfa_code=totp)
-    
+        totp = pyotp.TOTP(os.environ['robin_mfa']).now()
+        login = r.login(os.environ['robin_username'],
+                        os.environ['robin_password'], mfa_code=totp)
+
     def test_get_stock_loan_payments(cls):
         def isFloat(f):
             try:
@@ -858,7 +893,7 @@ class TestAccountInformation:
             assert isFloat(payment['amount']['amount'])
             assert ('symbol' in payment)
             assert ('description' in payment)
-        
+
     def test_get_interest_payments(cls):
         def isFloat(f):
             try:
@@ -866,7 +901,7 @@ class TestAccountInformation:
                 return True
             except ValueError:
                 return False
-            
+
         interests = r.get_interest_payments()
         assert (interests)
         for interest in interests:
@@ -875,3 +910,150 @@ class TestAccountInformation:
             assert ('direction' in interest)
             assert ('payout_type' in interest)
             assert ('reason' in interest)
+
+
+class TestHelperFunctions:
+    """Unit tests for helper functions - no login required"""
+
+    def test_filter_data_single_key_from_list(self):
+        """Test extracting a single key from a list of dicts"""
+
+        data = [
+            {'symbol': 'AAPL', 'price': 150},
+            {'symbol': 'GOOGL', 'price': 2800},
+            {'symbol': 'MSFT', 'price': 380}
+        ]
+        result = filter_data(data, 'symbol')
+        assert result == ['AAPL', 'GOOGL', 'MSFT']
+
+    def test_filter_data_single_key_from_dict(self):
+        """Test extracting a single key from a dict"""
+
+        data = {'symbol': 'AAPL', 'price': 150, 'quantity': 10}
+        result = filter_data(data, 'price')
+        assert result == 150
+
+    def test_filter_data_multiple_keys_from_list(self):
+        """Test extracting multiple keys from a list of dicts"""
+
+        data = [
+            {'symbol': 'AAPL', 'price': 150, 'quantity': 10},
+            {'symbol': 'GOOGL', 'price': 2800, 'quantity': 5}
+        ]
+        result = filter_data(data, ['symbol', 'price'])
+        assert result == [
+            {'symbol': 'AAPL', 'price': 150},
+            {'symbol': 'GOOGL', 'price': 2800}
+        ]
+
+    def test_filter_data_multiple_keys_from_dict(self):
+        """Test extracting multiple keys from a dict"""
+
+        data = {'symbol': 'AAPL', 'price': 150, 'quantity': 10, 'side': 'buy'}
+        result = filter_data(data, ['symbol', 'quantity'])
+        assert result == {'symbol': 'AAPL', 'quantity': 10}
+
+    def test_filter_data_where_single_condition(self):
+        """Test filtering with a single where condition"""
+
+        data = [
+            {'symbol': 'AAPL', 'price': 150, 'side': 'buy'},
+            {'symbol': 'GOOGL', 'price': 2800, 'side': 'buy'},
+            {'symbol': 'AAPL', 'price': 155, 'side': 'sell'}
+        ]
+        result = filter_data(data, None, where={'symbol': 'AAPL'})
+        assert len(result) == 2
+        assert all(item['symbol'] == 'AAPL' for item in result)
+
+    def test_filter_data_where_multiple_conditions(self):
+        """Test filtering with multiple where conditions (AND logic)"""
+
+        data = [
+            {'symbol': 'AAPL', 'price': 150, 'side': 'buy'},
+            {'symbol': 'GOOGL', 'price': 2800, 'side': 'buy'},
+            {'symbol': 'AAPL', 'price': 155, 'side': 'sell'}
+        ]
+        result = filter_data(data, None, where={
+                             'symbol': 'AAPL', 'side': 'buy'})
+        assert len(result) == 1
+        assert result[0] == {'symbol': 'AAPL', 'price': 150, 'side': 'buy'}
+
+    def test_filter_data_where_plus_single_key(self):
+        """Test filtering with where condition and extracting a single key"""
+
+        data = [
+            {'symbol': 'AAPL', 'price': 150, 'side': 'buy'},
+            {'symbol': 'AAPL', 'price': 155, 'side': 'sell'},
+            {'symbol': 'GOOGL', 'price': 2800, 'side': 'buy'}
+        ]
+        result = filter_data(data, 'price', where={'symbol': 'AAPL'})
+        assert result == [150, 155]
+
+    def test_filter_data_where_plus_multiple_keys(self):
+        """Test filtering with where condition and extracting multiple keys"""
+
+        data = [
+            {'symbol': 'AAPL', 'price': 150, 'quantity': 10, 'side': 'buy'},
+            {'symbol': 'GOOGL', 'price': 2800, 'quantity': 5, 'side': 'buy'},
+            {'symbol': 'MSFT', 'price': 380, 'quantity': 20, 'side': 'sell'}
+        ]
+        result = filter_data(data, ['symbol', 'price'], where={'side': 'buy'})
+        assert len(result) == 2
+        assert result == [
+            {'symbol': 'AAPL', 'price': 150},
+            {'symbol': 'GOOGL', 'price': 2800}
+        ]
+
+    def test_filter_data_where_no_matches(self):
+        """Test filtering when no items match the where condition"""
+
+        data = [
+            {'symbol': 'AAPL', 'price': 150},
+            {'symbol': 'GOOGL', 'price': 2800}
+        ]
+        result = filter_data(data, None, where={'symbol': 'TSLA'})
+        assert result == []
+
+    def test_filter_data_where_on_single_dict_match(self):
+        """Test filtering a single dict with matching condition"""
+
+        data = {'symbol': 'AAPL', 'price': 150, 'side': 'buy'}
+        result = filter_data(data, None, where={'symbol': 'AAPL'})
+        assert result == data
+
+    def test_filter_data_where_on_single_dict_no_match(self):
+        """Test filtering a single dict with non-matching condition"""
+
+        data = {'symbol': 'AAPL', 'price': 150, 'side': 'buy'}
+        result = filter_data(data, None, where={'symbol': 'GOOGL'})
+        assert result == None
+
+    def test_filter_data_none_input(self):
+        """Test that None input returns None"""
+
+        result = filter_data(None, 'symbol')
+        assert result == None
+
+    def test_filter_data_empty_list(self):
+        """Test that empty list returns empty list"""
+
+        result = filter_data([], 'symbol')
+        assert result == []
+
+    def test_filter_data_backwards_compatibility(self):
+        """Test that all old functionality still works (backwards compatibility)"""
+
+        # Old usage: single key extraction from list
+        data = [{'name': 'Apple'}, {'name': 'Google'}]
+        result = filter_data(data, 'name')
+        assert result == ['Apple', 'Google']
+
+        # Old usage: single key extraction from dict
+        data = {'name': 'Apple', 'ticker': 'AAPL'}
+        result = filter_data(data, 'ticker')
+        assert result == 'AAPL'
+
+        # Old usage: None info parameter returns original data
+        data = [{'a': 1}, {'b': 2}]
+        result = filter_data(data, None)
+        assert result == data
