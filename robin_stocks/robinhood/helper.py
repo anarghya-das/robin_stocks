@@ -166,13 +166,15 @@ def round_price(price):
 
 
 def filter_data(data, info):
-    """Takes the data and extracts the value for the keyword that matches info.
+    """Takes the data and extracts the value for the keyword(s) that match info.
 
     :param data: The data returned by request_get.
     :type data: dict or list
-    :param info: The keyword to filter from the data.
-    :type info: str
-    :returns:  A list or string with the values that correspond to the info keyword.
+    :param info: The keyword(s) to filter from the data. Can be a string for a single key,
+                 or a list/tuple of strings for multiple keys.
+    :type info: str or list or tuple
+    :returns:  A list or string with the values that correspond to the info keyword(s).
+               If info is a list/tuple, returns dict(s) with only the specified keys.
 
     """
     if (data == None):
@@ -189,13 +191,29 @@ def filter_data(data, info):
         noneType = None
 
     if info is not None:
-        if info in compareDict and type(data) == list:
-            return([x[info] for x in data])
-        elif info in compareDict and type(data) == dict:
-            return(data[info])
+        # Handle multiple keys (list or tuple)
+        if isinstance(info, (list, tuple)):
+            # Check if all keys exist in the data
+            missing_keys = [key for key in info if key not in compareDict]
+            if missing_keys:
+                for key in missing_keys:
+                    print(error_argument_not_key_in_dictionary(key), file=get_output())
+                return(noneType)
+
+            # Filter multiple keys
+            if type(data) == list:
+                return([{key: x[key] for key in info} for x in data])
+            elif type(data) == dict:
+                return({key: data[key] for key in info})
+        # Handle single key (backwards compatible)
         else:
-            print(error_argument_not_key_in_dictionary(info), file=get_output())
-            return(noneType)
+            if info in compareDict and type(data) == list:
+                return([x[info] for x in data])
+            elif info in compareDict and type(data) == dict:
+                return(data[info])
+            else:
+                print(error_argument_not_key_in_dictionary(info), file=get_output())
+                return(noneType)
     else:
         return(data)
 
