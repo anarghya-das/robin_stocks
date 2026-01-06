@@ -171,7 +171,8 @@ def filter_data(data, info, where=None):
     :param data: The data returned by request_get.
     :type data: dict or list
     :param info: The keyword(s) to filter from the data. Can be a string for a single key,
-                 or a list/tuple of strings for multiple keys.
+                 or a list/tuple of strings for multiple keys. Supports dot notation for nested keys
+                 (e.g., 'cursor_data.label.value').
     :type info: str or list or tuple
     :param where: Optional filtering conditions. A dict of key-value pairs to filter rows.
                   Example: where={'symbol': 'AAPL'} or where={'symbol': 'AAPL', 'side': 'buy'}
@@ -180,62 +181,96 @@ def filter_data(data, info, where=None):
                If info is a list/tuple, returns dict(s) with only the specified keys.
 
     """
-    if (data == None):
-        return(data)
-    elif (data == [None]):
-        return([])
-    elif (type(data) == list):
-        if (len(data) == 0):
-            return([])
+    if data is None:
+        return data
+    elif data == [None]:
+        return []
+    elif isinstance(data, list):
+        if len(data) == 0:
+            return []
         compareDict = data[0]
         noneType = []
-    elif (type(data) == dict):
+    elif isinstance(data, dict):
         compareDict = data
         noneType = None
+    else:
+        return None
+
+    def get_nested_value(obj, key_path):
+        """Helper function to get nested value using dot notation."""
+        keys = key_path.split('.')
+        value = obj
+        for key in keys:
+            if isinstance(value, dict) and key in value:
+                value = value[key]
+            else:
+                return None
+        return value
+
+    def key_exists_in_dict(dictionary, key_path):
+        """Check if a key path exists in dictionary (supports dot notation)."""
+        if '.' not in key_path:
+            return key_path in dictionary
+        return get_nested_value(dictionary, key_path) is not None
 
     # Apply where filter if provided
     if where is not None and isinstance(where, dict):
-        if type(data) == list:
+        if isinstance(data, list):
             # Filter list items that match ALL where conditions
             for key, value in where.items():
-                data = [item for item in data if item.get(key) == value]
+                if '.' in key:
+                    data = [item for item in data if get_nested_value(item, key) == value]
+                else:
+                    data = [item for item in data if item.get(key) == value]
             # Update compareDict if we still have data
             if len(data) > 0:
                 compareDict = data[0]
             else:
-                return([])
-        elif type(data) == dict:
+                return []
+        elif isinstance(data, dict):
             # For single dict, check if it matches all conditions
             for key, value in where.items():
-                if data.get(key) != value:
-                    return(noneType)
+                if '.' in key:
+                    if get_nested_value(data, key) != value:
+                        return noneType
+                else:
+                    if data.get(key) != value:
+                        return noneType
 
     if info is not None:
         # Handle multiple keys (list or tuple)
         if isinstance(info, (list, tuple)):
             # Check if all keys exist in the data
-            missing_keys = [key for key in info if key not in compareDict]
+            missing_keys = [key for key in info if not key_exists_in_dict(compareDict, key)]
             if missing_keys:
                 for key in missing_keys:
                     print(error_argument_not_key_in_dictionary(key), file=get_output())
-                return(noneType)
+                return noneType
 
             # Filter multiple keys
-            if type(data) == list:
-                return([{key: x[key] for key in info} for x in data])
-            elif type(data) == dict:
-                return({key: data[key] for key in info})
+            if isinstance(data, list):
+                return [{key: get_nested_value(x, key) if '.' in key else x[key] for key in info} for x in data]
+            elif isinstance(data, dict):
+                return {key: get_nested_value(data, key) if '.' in key else data[key] for key in info}
         # Handle single key (backwards compatible)
         else:
-            if info in compareDict and type(data) == list:
-                return([x[info] for x in data])
-            elif info in compareDict and type(data) == dict:
-                return(data[info])
+            if '.' in info:
+                # Handle nested key with dot notation
+                if isinstance(data, list):
+                    return [get_nested_value(x, info) for x in data]
+                elif isinstance(data, dict):
+                    return get_nested_value(data, info)
             else:
-                print(error_argument_not_key_in_dictionary(info), file=get_output())
-                return(noneType)
+                # Original behavior for non-nested keys
+                if info in compareDict and isinstance(data, list):
+                    return [x[info] for x in data]
+                elif info in compareDict and isinstance(data, dict):
+                    return data[info]
+                else:
+                    print(error_argument_not_key_in_dictionary(info), file=get_output())
+                    return noneType
     else:
-        return(data)
+        return data
 
 
 def inputs_to_set(inputSymbols):

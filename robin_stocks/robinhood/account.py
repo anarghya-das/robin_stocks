@@ -417,7 +417,7 @@ def get_unified_transfers(info=None):
 
     """
     url = unifiedtransfers_url()
-    data = request_get(url, 'results')
+    data = request_get(url, 'pagination')
     return(filter_data(data, info))
 
 @login_required

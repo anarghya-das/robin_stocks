@@ -6,6 +6,7 @@ import time
 from robin_stocks.robinhood.helper import *
 from robin_stocks.robinhood.urls import *
 
+
 def generate_device_token():
     """Generates a cryptographically secure device token."""
     rands = [secrets.randbelow(256) for _ in range(16)]
@@ -22,21 +23,24 @@ def _get_sherrif_id(data):
     """Extracts the sheriff verification ID from the response."""
     if "id" in data:
         return data["id"]
-    raise Exception("Error: No verification ID returned in user-machine response")
+    raise Exception(
+        "Error: No verification ID returned in user-machine response")
 
 
 def _validate_sherrif_id(device_token: str, workflow_id: str):
     """Handles Robinhood's verification workflow, including email, SMS, and app-based approvals."""
     print("Starting verification process...")
     pathfinder_url = "https://api.robinhood.com/pathfinder/user_machine/"
-    machine_payload = {'device_id': device_token, 'flow': 'suv', 'input': {'workflow_id': workflow_id}}
-    machine_data = request_post(url=pathfinder_url, payload=machine_payload, json=True)
+    machine_payload = {'device_id': device_token,
+                       'flow': 'suv', 'input': {'workflow_id': workflow_id}}
+    machine_data = request_post(
+        url=pathfinder_url, payload=machine_payload, json=True)
 
     machine_id = _get_sherrif_id(machine_data)
     inquiries_url = f"https://api.robinhood.com/pathfinder/inquiries/{machine_id}/user_view/"
 
     start_time = time.time()
-    
+
     while time.time() - start_time < 120:  # 2-minute timeout
         time.sleep(5)
         inquiries_response = request_get(inquiries_url)
@@ -65,33 +69,39 @@ def _validate_sherrif_id(device_token: str, workflow_id: str):
                 break  # Stop polling once verification is complete
 
             if challenge_type in ["sms", "email"] and challenge_status == "issued":
-                user_code = input(f"Enter the {challenge_type} verification code sent to your device: ")
+                user_code = input(
+                    f"Enter the {challenge_type} verification code sent to your device: ")
                 challenge_url = f"https://api.robinhood.com/challenge/{challenge_id}/respond/"
                 challenge_payload = {"response": user_code}
-                challenge_response = request_post(url=challenge_url, payload=challenge_payload)
+                challenge_response = request_post(
+                    url=challenge_url, payload=challenge_payload)
 
                 if challenge_response.get("status") == "validated":
                     break
 
     # **Now poll the workflow status to confirm final approval**
     inquiries_url = f"https://api.robinhood.com/pathfinder/inquiries/{machine_id}/user_view/"
-    
+
     retry_attempts = 5  # Allow up to 5 retries in case of 500 errors
-    while time.time() - start_time < 120:  # 2-minute timeout 
+    while time.time() - start_time < 120:  # 2-minute timeout
         try:
-            inquiries_payload = {"sequence": 0, "user_input": {"status": "continue"}}
-            inquiries_response = request_post(url=inquiries_url, payload=inquiries_payload,json=True)
+            inquiries_payload = {"sequence": 0,
+                                 "user_input": {"status": "continue"}}
+            inquiries_response = request_post(
+                url=inquiries_url, payload=inquiries_payload, json=True)
             if "type_context" in inquiries_response and inquiries_response["type_context"]["result"] == "workflow_status_approved":
                 print("Verification successful!")
                 return
             else:
-                time.sleep(5)  # **Increase delay between requests to prevent rate limits**
+                # **Increase delay between requests to prevent rate limits**
+                time.sleep(5)
         except requests.exceptions.RequestException as e:
             time.sleep(5)
             print(f"API request failed: {e}")
             retry_attempts -= 1
             if retry_attempts == 0:
-                raise TimeoutError("Max retries reached. Assuming login approved and proceeding.")
+                raise TimeoutError(
+                    "Max retries reached. Assuming login approved and proceeding.")
             print("Retrying workflow status check...")
             continue
 
@@ -100,10 +110,12 @@ def _validate_sherrif_id(device_token: str, workflow_id: str):
             print("Error: No response from Robinhood API. Retrying...")
             retry_attempts -= 1
             if retry_attempts == 0:
-                raise TimeoutError("Max retries reached. Assuming login approved and proceeding.")
+                raise TimeoutError(
+                    "Max retries reached. Assuming login approved and proceeding.")
             continue
 
-        workflow_status = inquiries_response.get("verification_workflow", {}).get("workflow_status")
+        workflow_status = inquiries_response.get(
+            "verification_workflow", {}).get("workflow_status")
 
         if workflow_status == "workflow_status_approved":
             print("Workflow status approved! Proceeding with login...")
@@ -113,10 +125,11 @@ def _validate_sherrif_id(device_token: str, workflow_id: str):
         else:
             retry_attempts -= 1
             if retry_attempts == 0:
-                raise TimeoutError("Max retries reached. Assuming login approved and proceeding.")
+                raise TimeoutError(
+                    "Max retries reached. Assuming login approved and proceeding.")
 
-    raise TimeoutError("Timeout reached. Assuming login is approved and proceeding.")
-
+    raise TimeoutError(
+        "Timeout reached. Assuming login is approved and proceeding.")
 
 
 def login(username=None, password=None, expiresIn=86400, scope='internal', store_session=True, mfa_code=None, pickle_path="", pickle_name=""):
@@ -128,7 +141,8 @@ def login(username=None, password=None, expiresIn=86400, scope='internal', store
 
     if pickle_path:
         if not os.path.isabs(pickle_path):
-            pickle_path = os.path.normpath(os.path.join(os.getcwd(), pickle_path))
+            pickle_path = os.path.normpath(
+                os.path.join(os.getcwd(), pickle_path))
         data_dir = pickle_path
 
     if not os.path.exists(data_dir):
@@ -167,21 +181,22 @@ def login(username=None, password=None, expiresIn=86400, scope='internal', store
                     login_payload['device_token'] = pickle_device_token
                     set_login_state(True)
                     update_session(
-                            'Authorization', '{0} {1}'.format(token_type, access_token))
+                        'Authorization', '{0} {1}'.format(token_type, access_token))
                     # Try to load account profile to check that authorization token is still valid.
                     res = request_get(
                         positions_url(), 'pagination', {'nonzero': 'true'}, jsonify_data=False)
                     # Raises exception if response code is not 200.
                     res.raise_for_status()
-                    return({'access_token': access_token, 'token_type': token_type,
-                            'expires_in': expiresIn, 'scope': scope, 
-                            'detail': 'logged in using authentication in {0}'.format(creds_file),
-                            'backup_code': None, 'refresh_token': refresh_token})
-            except Exception:
-                    print(
-                        "ERROR: There was an issue loading pickle file. Authentication may be expired - logging in normally.", file=get_output())
-                    set_login_state(False)
-                    update_session('Authorization', None)
+                    return ({'access_token': access_token, 'token_type': token_type,
+                            'expires_in': expiresIn, 'scope': scope,
+                             'detail': 'logged in using authentication in {0}'.format(creds_file),
+                             'backup_code': None, 'refresh_token': refresh_token})
+            except Exception as e:
+                print(f"Error loading cached session: {e}")
+                print(
+                    "ERROR: There was an issue loading pickle file. Authentication may be expired - logging in normally.", file=get_output())
+                set_login_state(False)
+                update_session('Authorization', None)
         else:
             os.remove(pickle_path)
 
@@ -206,7 +221,8 @@ def login(username=None, password=None, expiresIn=86400, scope='internal', store
                 data = request_post(url, login_payload)
 
             if 'access_token' in data:
-                token = '{0} {1}'.format(data['token_type'], data['access_token'])
+                token = '{0} {1}'.format(
+                    data['token_type'], data['access_token'])
                 update_session('Authorization', token)
                 set_login_state(True)
 
