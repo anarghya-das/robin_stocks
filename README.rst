@@ -7,8 +7,7 @@ This package has not been published to PyPI. Install from this repository::
 
     pip install "calcap-robin-stocks @ git+https://github.com/anarghya-das/robin_stocks.git"
 
-Upstream documentation and attribution follow below. Upstream PyPI installation
-commands install the original package, rather than this fork.
+Upstream documentation and attribution follow below.
 
 .. image:: docs/source/_static/pics/title.PNG
 
@@ -62,24 +61,22 @@ Finally, if you would like the API calls to print out to terminal, then add the 
 
 Installing
 ========================
-There is no need to download these files directly. This project is published on PyPi,
-so it can be installed by typing into terminal (on Mac) or into command prompt (on PC):
+This fork is installed from GitHub and is not currently published to PyPI::
 
->>> pip install calcap_robin_stocks
+    pip install "calcap-robin-stocks @ git+https://github.com/anarghya-das/robin_stocks.git"
 
-Also be sure that Python 3 is installed. If you need to install python you can download it from `Python.org <https://www.python.org/downloads/>`_.
-Pip is the package installer for python, and is automatically installed when you install python. To learn more about Pip, you can go to `PyPi.org <https://pypi.org/project/pip/>`_.
+For an editable checkout::
 
-If you would like to be able to make changes to the package yourself, clone the repository onto your computer by typing into the terminal or command prompt:
+    git clone https://github.com/anarghya-das/robin_stocks.git
+    cd robin_stocks
+    pip install -e .
 
->>> git clone https://github.com/jmfernandes/robin_stocks.git
->>> cd calcap_robin_stocks
+Use the renamed Python namespace::
 
-Now that you have cd into the repository you can type
+    import calcap_robin_stocks.robinhood as rh
 
->>> pip install .
-
-and this will install whatever you changed in the local files. This will allow you to make changes and experiment with your own code.
+The original ``robin-stocks`` distribution uses ``robin_stocks`` imports.
+The two namespaces can coexist in the same Python environment.
 
 List of Functions and Example Usage
 ===================================
