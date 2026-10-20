@@ -1,0 +1,38 @@
+name: Sync upstream
+
+on:
+  schedule:
+    - cron: '23 12 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-upstream-master
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.repository == 'anarghya-das/robin_stocks'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Merge upstream without replacing fork changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch https://github.com/jmfernandes/robin_stocks.git master
+          git merge --no-edit FETCH_HEAD
+      - name: Install merged package
+        run: python -m pip install -e .
+      - name: Check fork compatibility without brokerage access
+        run: python -m unittest discover -s tests -p test_fork_compatibility.py -v
+      - name: Publish tested merge
+        run: git push origin HEAD:master
