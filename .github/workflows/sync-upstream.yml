@@ -29,7 +29,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git fetch https://github.com/jmfernandes/robin_stocks.git master
-          git merge --no-edit FETCH_HEAD
+          git -c merge.directoryRenames=true merge --no-edit FETCH_HEAD
       - name: Adapt upstream additions to the fork namespace
         run: |
           python tools/normalize_upstream.py
