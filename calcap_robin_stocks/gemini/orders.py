@@ -1,9 +1,9 @@
-from robin_stocks.gemini.authentication import (generate_order_id,
+from calcap_robin_stocks.gemini.authentication import (generate_order_id,
                                                 generate_signature)
-from robin_stocks.gemini.crypto import get_price
-from robin_stocks.gemini.helper import (format_inputs, login_required,
+from calcap_robin_stocks.gemini.crypto import get_price
+from calcap_robin_stocks.gemini.helper import (format_inputs, login_required,
                                         request_post)
-from robin_stocks.gemini.urls import URLS
+from calcap_robin_stocks.gemini.urls import URLS
 
 
 @login_required

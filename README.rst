@@ -1,3 +1,15 @@
+Calcap Robin Stocks
+==================
+
+Calcap fork of Robin Stocks with transfer pagination and extended filtering.
+Distribution: ``calcap-robin-stocks``. Import: ``calcap_robin_stocks``.
+This package has not been published to PyPI. Install from this repository::
+
+    pip install "calcap-robin-stocks @ git+https://github.com/anarghya-das/robin_stocks.git"
+
+Upstream documentation and attribution follow below. Upstream PyPI installation
+commands install the original package, rather than this fork.
+
 .. image:: docs/source/_static/pics/title.PNG
 
 Robin-Stocks API Library
@@ -16,9 +28,9 @@ documents for `Robinhood Documentation`_, `Gemini Documentation`_, and `TDA Docu
 
 Below are examples of how to call each of those modules.
 
->>> import robin_stocks.robinhood as rh
->>> import robin_stocks.gemini as gem
->>> import robin_stocks.tda as tda
+>>> import calcap_robin_stocks.robinhood as rh
+>>> import calcap_robin_stocks.gemini as gem
+>>> import calcap_robin_stocks.tda as tda
 >>> # Here are some example calls
 >>> gem.get_pubticker("btcusd") # gets ticker information for Bitcoin from Gemini
 >>> rh.get_all_open_crypto_orders() # gets all cypto orders from Robinhood
@@ -53,7 +65,7 @@ Installing
 There is no need to download these files directly. This project is published on PyPi,
 so it can be installed by typing into terminal (on Mac) or into command prompt (on PC):
 
->>> pip install robin_stocks
+>>> pip install calcap_robin_stocks
 
 Also be sure that Python 3 is installed. If you need to install python you can download it from `Python.org <https://www.python.org/downloads/>`_.
 Pip is the package installer for python, and is automatically installed when you install python. To learn more about Pip, you can go to `PyPi.org <https://pypi.org/project/pip/>`_.
@@ -61,7 +73,7 @@ Pip is the package installer for python, and is automatically installed when you
 If you would like to be able to make changes to the package yourself, clone the repository onto your computer by typing into the terminal or command prompt:
 
 >>> git clone https://github.com/jmfernandes/robin_stocks.git
->>> cd robin_stocks
+>>> cd calcap_robin_stocks
 
 Now that you have cd into the repository you can type
 

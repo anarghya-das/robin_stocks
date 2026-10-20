@@ -1,5 +1,5 @@
-from robin_stocks.tda.helper import format_inputs, login_required, request_get
-from robin_stocks.tda.urls import URLS
+from calcap_robin_stocks.tda.helper import format_inputs, login_required, request_get
+from calcap_robin_stocks.tda.urls import URLS
 
 
 @login_required

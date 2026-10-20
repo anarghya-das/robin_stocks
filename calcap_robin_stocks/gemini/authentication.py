@@ -7,11 +7,11 @@ from json import dumps
 from random import random
 from time import mktime
 
-from robin_stocks.gemini.helper import (format_inputs, get_secret_key, get_nonce,
+from calcap_robin_stocks.gemini.helper import (format_inputs, get_secret_key, get_nonce,
                                         increment_nonce, login_required,
                                         request_post, set_secret_key,
                                         set_login_state, update_session)
-from robin_stocks.gemini.urls import URLS
+from calcap_robin_stocks.gemini.urls import URLS
 
 
 def login(api_key, secret_key):

@@ -4,7 +4,7 @@ from json import dumps
 from re import IGNORECASE, split
 
 import requests
-from robin_stocks.tda.globals import (LOGGED_IN, RETURN_PARSED_JSON_RESPONSE,
+from calcap_robin_stocks.tda.globals import (LOGGED_IN, RETURN_PARSED_JSON_RESPONSE,
                                       SESSION)
 
 

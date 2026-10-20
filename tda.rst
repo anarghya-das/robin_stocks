@@ -9,7 +9,7 @@ The first thing you need to do is create an encryption passcode. Robin-Stocks st
 API information in a pickle file on your computer, and encrypts it using a password for your own safety.
 To generate this passcode, execute the following code.
 
->>> import robin_stocks.tda as tda
+>>> import calcap_robin_stocks.tda as tda
 >>> passcode = tda.generate_encryption_passcode()
 >>> print("my secret passcode is ", passcode)
 
@@ -28,7 +28,7 @@ an authentication token that is generated on the TD Ameritrade API website,
 and a refresh token that is also generated on the TD Ameritrade API website.
 To log in for the first time, execute the following code.
 
->>> import robin_stocks.tda as tda
+>>> import calcap_robin_stocks.tda as tda
 >>> tda.login_first_time("my-encryption-passcode", "my-application-consumer-key",
 >>>     "my-authroization-token", "my-refresh-token") # ONLY CALL ME ONCE. EVER.
 
@@ -36,11 +36,11 @@ Please be sure that you do not call login_first_time every time you run a script
 and then you should delete the code from your python file. A better solution would be to enter the python interpreter 
 in Terminal or Windows Command Prompt and to execute the login_first_time function from there. login_first_time will save 
 the authentication and refresh token to a pickle file in your home directory. Authorization tokens expire every 30 minutes, 
-and the refresh token is used by robin_stocks to get you a new authentication token.
+and the refresh token is used by calcap_robin_stocks to get you a new authentication token.
 
 So, at the start of every TD Ameritrade script or program you write, you should execute the following code.
 
->>> import robin_stocks.tda as tda
+>>> import calcap_robin_stocks.tda as tda
 >>> tda.login("my-encryption-passcode") # make sure you have called login_first_time as some point.
 
 The login function will use your encryption passcode to decrypt your pickle file, generate a new authorization token 

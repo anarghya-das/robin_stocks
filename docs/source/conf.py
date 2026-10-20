@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# robin_stocks documentation build configuration file, created by
+# calcap_robin_stocks documentation build configuration file, created by
 # sphinx-quickstart on Tue Oct 16 18:34:53 2018.
 #
 # This file is execfile()d with the current directory set to its
@@ -52,7 +52,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'robin_stocks'
+project = 'calcap_robin_stocks'
 copyright = '2018, Joshua M. Fernandes'
 author = 'Joshua M. Fernandes'
 
@@ -113,7 +113,7 @@ html_logo = '_static/pics/title.PNG'
 
 html_favicon = '_static/favicon.ico'
 
-# github_repo = 'robin_stocks'
+# github_repo = 'calcap_robin_stocks'
 #
 # github_user = 'jmfernandes'
 #
@@ -122,7 +122,7 @@ html_favicon = '_static/favicon.ico'
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'robin_stocksdoc'
+htmlhelp_basename = 'calcap_robin_stocksdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -149,7 +149,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'robin_stocks.tex', 'robin\\_stocks Documentation',
+    (master_doc, 'calcap_robin_stocks.tex', 'robin\\_stocks Documentation',
      'Joshua M Fernandes', 'manual'),
 ]
 
@@ -159,7 +159,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'robin_stocks', 'robin_stocks Documentation',
+    (master_doc, 'calcap_robin_stocks', 'calcap_robin_stocks Documentation',
      [author], 1)
 ]
 
@@ -170,8 +170,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'robin_stocks', 'robin_stocks Documentation',
-     author, 'robin_stocks', 'One line description of project.',
+    (master_doc, 'calcap_robin_stocks', 'calcap_robin_stocks Documentation',
+     author, 'calcap_robin_stocks', 'One line description of project.',
      'Miscellaneous'),
 ]
 

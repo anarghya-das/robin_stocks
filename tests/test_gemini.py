@@ -1,6 +1,6 @@
 import os
 
-import robin_stocks.gemini as g
+import calcap_robin_stocks.gemini as g
 from dotenv import load_dotenv
 
 load_dotenv()

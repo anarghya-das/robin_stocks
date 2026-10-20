@@ -4,7 +4,7 @@ from functools import wraps
 from inspect import signature
 from zlib import compress, decompress
 
-from robin_stocks.gemini.globals import (LOGGED_IN, NONCE,
+from calcap_robin_stocks.gemini.globals import (LOGGED_IN, NONCE,
                                          RETURN_PARSED_JSON_RESPONSE,
                                          SECRET_API_KEY, SESSION,
                                          USE_SANDBOX_URLS)

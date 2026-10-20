@@ -1,6 +1,6 @@
 import os
 
-import robin_stocks.tda as t
+import calcap_robin_stocks.tda as t
 from dotenv import load_dotenv
 
 load_dotenv()

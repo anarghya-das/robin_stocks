@@ -1,13 +1,18 @@
 """Offline checks for fork behavior required by Calcap."""
 
 import unittest
+from importlib.metadata import metadata
 from unittest.mock import patch
 
-from robin_stocks.robinhood import account
-from robin_stocks.robinhood.helper import filter_data
+from calcap_robin_stocks.robinhood import account
+from calcap_robin_stocks.robinhood.helper import filter_data
 
 
 class TestForkCompatibility(unittest.TestCase):
+    def test_distribution_identity(self):
+        self.assertEqual(metadata('calcap-robin-stocks')['Name'],
+                         'calcap-robin-stocks')
+
     def setUp(self):
         self.rows = [
             {'account_number': 'one', 'brokerage_account_type': 'individual',
@@ -46,7 +51,7 @@ class TestForkCompatibility(unittest.TestCase):
 
     def test_unified_transfers_requests_all_pages(self):
         transfers = [{'id': 'first'}, {'id': 'second'}]
-        with patch('robin_stocks.robinhood.helper.LOGGED_IN', True), \
+        with patch('calcap_robin_stocks.robinhood.helper.LOGGED_IN', True), \
                 patch.object(account, 'request_get', return_value=transfers) as get:
             self.assertEqual(account.get_unified_transfers(), transfers)
             get.assert_called_once_with(account.unifiedtransfers_url(), 'pagination')

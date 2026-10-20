@@ -3,7 +3,7 @@
 from functools import wraps
 
 import requests
-from robin_stocks.robinhood.globals import LOGGED_IN, OUTPUT, SESSION
+from calcap_robin_stocks.robinhood.globals import LOGGED_IN, OUTPUT, SESSION
 
 
 def set_login_state(logged_in):
@@ -165,6 +165,28 @@ def round_price(price):
     return returnPrice
 
 
+def _get_nested_value(value, key_path):
+    """Read a dotted dictionary path, returning None for missing values."""
+    for key in key_path.split('.'):
+        if not isinstance(value, dict) or key not in value:
+            return None
+        value = value[key]
+    return value
+
+
+def _field_value(row, key):
+    return _get_nested_value(row, key) if '.' in key else row[key]
+
+
+def _field_exists(row, key):
+    return _get_nested_value(row, key) is not None if '.' in key else key in row
+
+
+def _matches_conditions(row, conditions):
+    return all(_get_nested_value(row, key) == value
+               for key, value in conditions.items())
+
+
 def filter_data(data, info, where=None):
     """Takes the data and extracts the value for the keyword(s) that match info.
 
@@ -182,95 +204,41 @@ def filter_data(data, info, where=None):
 
     """
     if data is None:
-        return data
-    elif data == [None]:
+        return None
+    if data == [None] or data == []:
         return []
-    elif isinstance(data, list):
-        if len(data) == 0:
-            return []
-        compareDict = data[0]
-        noneType = []
-    elif isinstance(data, dict):
-        compareDict = data
-        noneType = None
-    else:
+    if not isinstance(data, (list, dict)):
         return None
 
-    def get_nested_value(obj, key_path):
-        """Helper function to get nested value using dot notation."""
-        keys = key_path.split('.')
-        value = obj
-        for key in keys:
-            if isinstance(value, dict) and key in value:
-                value = value[key]
-            else:
-                return None
-        return value
-
-    def key_exists_in_dict(dictionary, key_path):
-        """Check if a key path exists in dictionary (supports dot notation)."""
-        if '.' not in key_path:
-            return key_path in dictionary
-        return get_nested_value(dictionary, key_path) is not None
-
-    # Apply where filter if provided
-    if where is not None and isinstance(where, dict):
-        if isinstance(data, list):
-            # Filter list items that match ALL where conditions
-            for key, value in where.items():
-                if '.' in key:
-                    data = [item for item in data if get_nested_value(item, key) == value]
-                else:
-                    data = [item for item in data if item.get(key) == value]
-            # Update compareDict if we still have data
-            if len(data) > 0:
-                compareDict = data[0]
-            else:
+    is_list = isinstance(data, list)
+    empty_result = [] if is_list else None
+    if isinstance(where, dict):
+        if is_list:
+            data = [row for row in data if _matches_conditions(row, where)]
+            if not data:
                 return []
-        elif isinstance(data, dict):
-            # For single dict, check if it matches all conditions
-            for key, value in where.items():
-                if '.' in key:
-                    if get_nested_value(data, key) != value:
-                        return noneType
-                else:
-                    if data.get(key) != value:
-                        return noneType
+        elif not _matches_conditions(data, where):
+            return None
 
-    if info is not None:
-        # Handle multiple keys (list or tuple)
-        if isinstance(info, (list, tuple)):
-            # Check if all keys exist in the data
-            missing_keys = [key for key in info if not key_exists_in_dict(compareDict, key)]
-            if missing_keys:
-                for key in missing_keys:
-                    print(error_argument_not_key_in_dictionary(key), file=get_output())
-                return noneType
-
-            # Filter multiple keys
-            if isinstance(data, list):
-                return [{key: get_nested_value(x, key) if '.' in key else x[key] for key in info} for x in data]
-            elif isinstance(data, dict):
-                return {key: get_nested_value(data, key) if '.' in key else data[key] for key in info}
-        # Handle single key (backwards compatible)
-        else:
-            if '.' in info:
-                # Handle nested key with dot notation
-                if isinstance(data, list):
-                    return [get_nested_value(x, info) for x in data]
-                elif isinstance(data, dict):
-                    return get_nested_value(data, info)
-            else:
-                # Original behavior for non-nested keys
-                if info in compareDict and isinstance(data, list):
-                    return [x[info] for x in data]
-                elif info in compareDict and isinstance(data, dict):
-                    return data[info]
-                else:
-                    print(error_argument_not_key_in_dictionary(info), file=get_output())
-                    return noneType
-    else:
+    if info is None:
         return data
+
+    first_row = data[0] if is_list else data
+    multiple_fields = isinstance(info, (list, tuple))
+    fields = info if multiple_fields else [info]
+    # Preserve single dotted-field behavior: a missing path returns None.
+    missing = [key for key in fields if not _field_exists(first_row, key)]
+    if missing and (multiple_fields or '.' not in info):
+        for key in missing:
+            print(error_argument_not_key_in_dictionary(key), file=get_output())
+        return empty_result
+
+    def project(row):
+        if multiple_fields:
+            return {key: _field_value(row, key) for key in fields}
+        return _field_value(row, info)
+
+    return [project(row) for row in data] if is_list else project(data)
 
 
 def inputs_to_set(inputSymbols):

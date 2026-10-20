@@ -2,7 +2,7 @@
 from enum import Enum, auto
 from re import IGNORECASE, match, split
 
-from robin_stocks.gemini.helper import get_sandbox_flag
+from calcap_robin_stocks.gemini.helper import get_sandbox_flag
 
 
 class AutoName(Enum):

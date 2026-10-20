@@ -5,7 +5,7 @@ or in a file named .env with the following value
 tda_encryption_passcode=keep_this_key_somewhere_safe
 '''
 
-import robin_stocks.tda as t
+import calcap_robin_stocks.tda as t
 ##!!! Optionally load environment variables from .env or .test.env
 import os
 from dotenv import load_dotenv

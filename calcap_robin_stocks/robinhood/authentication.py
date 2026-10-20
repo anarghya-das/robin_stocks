@@ -3,8 +3,8 @@ import os
 import pickle
 import secrets
 import time
-from robin_stocks.robinhood.helper import *
-from robin_stocks.robinhood.urls import *
+from calcap_robin_stocks.robinhood.helper import *
+from calcap_robin_stocks.robinhood.urls import *
 
 
 def generate_device_token():

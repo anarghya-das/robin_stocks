@@ -17,7 +17,7 @@ Some of these are part of `PEP 20 <https://www.python.org/dev/pep-0020>`_ standa
 When writing code for this project, you want other developers to be able to follow all function calls.
 A lot of times in C++ it can be confusing when trying to figure out if a function is built-in, defined in the same file,
 defined in another object, or an alias for another function. In Python, it's a lot easier to see where a function comes from,
-but care must still be taken to make code as readable as possible. This is the reason why my code uses ``import robin_stocks.module as module`` instead of ``from module import *``.
+but care must still be taken to make code as readable as possible. This is the reason why my code uses ``import calcap_robin_stocks.module as module`` instead of ``from module import *``.
 This means that calls to a function from the module must be written as ``module.function`` instead of the simply
 ``function``. When viewing the code, it's easy to see which functions come from which modules. However users do not have to 
 explicity call functions because of the following reason...
@@ -25,15 +25,15 @@ explicity call functions because of the following reason...
 * Flat is better than nested
 
 The __init__.py file contains an import of all the functions I want to be made public to the user. This allows
-the user to call ``robin_stocks.function`` for all functions. Without the imports, the user would have to call
-``robin_stocks.module.function`` and be sure to use the correct module name every single time. This may seem contradictory
+the user to call ``calcap_robin_stocks.function`` for all functions. Without the imports, the user would have to call
+``calcap_robin_stocks.module.function`` and be sure to use the correct module name every single time. This may seem contradictory
 to the first standard, but the difference is that whereas I (the developer) must make explicit calls, for the end user it is
 unnecessary.
 
 * Three strikes and you refactor
 
 If you find yourself copying and pasting the same code 3 or more times, then it means you should put that code in
-its own function. As an example of this, I created the :func:`robin_stocks.helper.request_get` function, and then provided input parameters to
+its own function. As an example of this, I created the :func:`calcap_robin_stocks.helper.request_get` function, and then provided input parameters to
 handle different use cases. This means that although functions I write may have very different logic for how they handle the get
 requests from Robinhood, none of this logic is contained in the functions themselves. It's all been abstracted away to a single function
 which means the code is easier to debug, easier to propagate changes, and easier to read.

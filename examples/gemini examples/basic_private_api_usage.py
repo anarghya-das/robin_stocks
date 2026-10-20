@@ -4,7 +4,7 @@ file and the os.environ() function reads the values from the file.ß
 '''
 import os
 
-import robin_stocks.gemini as g
+import calcap_robin_stocks.gemini as g
 from dotenv import load_dotenv
 ##
 ticker = "btcusd"
