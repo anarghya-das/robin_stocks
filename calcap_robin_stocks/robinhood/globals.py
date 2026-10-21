@@ -1,6 +1,7 @@
 """Holds the session header and other global variables."""
 import sys
 import os
+from contextvars import ContextVar
 
 from requests import Session
 
@@ -17,6 +18,11 @@ SESSION.headers = {
     "Connection": "keep-alive",
     "User-Agent": "*"
 }
+
+# Calcap: the session of the client whose account is being read right now, set
+# by clients.client_session(). Each thread and asyncio task has its own value,
+# so several clients can be read at once. None means the shared SESSION above.
+CLIENT_SESSION = ContextVar("calcap_client_session", default=None)
 
 #All print() statement direct their output to this stream
 #by default, we use stdout which is the existing behavior
