@@ -3,7 +3,13 @@
 from functools import wraps
 
 import requests
-from calcap_robin_stocks.robinhood.globals import LOGGED_IN, OUTPUT, SESSION
+from calcap_robin_stocks.robinhood.globals import CLIENT_SESSION, LOGGED_IN, OUTPUT, SESSION
+
+
+def current_session():
+    """Returns the active client's session inside clients.client_session(), else the shared one."""
+    session = CLIENT_SESSION.get()
+    return SESSION if session is None else session
 
 
 def set_login_state(logged_in):
@@ -27,7 +33,7 @@ def login_required(func):
     @wraps(func)
     def login_wrapper(*args, **kwargs):
         global LOGGED_IN
-        if not LOGGED_IN:
+        if not LOGGED_IN and CLIENT_SESSION.get() is None:
             raise Exception('{} can only be called when logged in'.format(
                 func.__name__))
         return(func(*args, **kwargs))
@@ -280,7 +286,7 @@ def request_document(url, payload=None):
 
     """ 
     try:
-        res = SESSION.get(url, params=payload)
+        res = current_session().get(url, params=payload)
         res.raise_for_status()
     except requests.exceptions.HTTPError as message:
         print(message, file=get_output())
@@ -313,14 +319,14 @@ def request_get(url, dataType='regular', payload=None, jsonify_data=True):
     res = None
     if jsonify_data:
         try:
-            res = SESSION.get(url, params=payload)
+            res = current_session().get(url, params=payload)
             res.raise_for_status()
             data = res.json()
         except (requests.exceptions.HTTPError, AttributeError) as message:
             print(message, file=get_output())
             return(data)
     else:
-        res = SESSION.get(url, params=payload)
+        res = current_session().get(url, params=payload)
         return(res)
     # Only continue to filter data if jsonify_data=True, and Session.get returned status code <200>.
     if (dataType == 'results'):
@@ -342,7 +348,7 @@ def request_get(url, dataType='regular', payload=None, jsonify_data=True):
             print('Found Additional pages.', file=get_output())
         while nextData['next']:
             try:
-                res = SESSION.get(nextData['next'])
+                res = current_session().get(nextData['next'])
                 res.raise_for_status()
                 nextData = res.json()
             except:
@@ -385,11 +391,11 @@ def request_post(url, payload=None, timeout=16, json=False, jsonify_data=True):
     try:
         if json:
             update_session('Content-Type', 'application/json')
-            res = SESSION.post(url, json=payload, timeout=timeout)
+            res = current_session().post(url, json=payload, timeout=timeout)
             update_session(
                 'Content-Type', 'application/x-www-form-urlencoded; charset=utf-8')
         else:
-            res = SESSION.post(url, data=payload, timeout=timeout)
+            res = current_session().post(url, data=payload, timeout=timeout)
         if res.status_code not in [200, 201, 202, 204, 301, 302, 303, 304, 307, 400, 401, 402, 403]:
             raise Exception("Received "+ str(res.status_code))
         data = res.json()
@@ -410,7 +416,7 @@ def request_delete(url):
 
     """
     try:
-        res = SESSION.delete(url)
+        res = current_session().delete(url)
         res.raise_for_status()
         data = res
     except Exception as message:
@@ -430,7 +436,7 @@ def update_session(key, value):
     :returns: None. Updates the session header with a value.
 
     """
-    SESSION.headers[key] = value
+    current_session().headers[key] = value
 
 
 def error_argument_not_key_in_dictionary(keyword):

@@ -17,13 +17,32 @@ A merge conflict, failed test, or rejected push stops the workflow without
 changing the remote branch. Review failed runs in Actions, resolve conflicts
 locally, run the offline checks, and push the resolution. Changes that Git can
 merge automatically may still require review; these checks cover Calcap's
-custom filtering and transfer pagination, not all Robinhood API behavior.
+custom filtering, transfer pagination and per-client sessions, not all Robinhood
+API behavior.
 
 Local check (no brokerage credentials or API access required):
 
 ```sh
 python -m unittest discover -s tests -p test_fork_compatibility.py -v
+python -m unittest discover -s tests -p test_client_sessions.py -v
 ```
+
+## Per-client sessions
+
+`calcap_robin_stocks/robinhood/clients.py` lets one process read several
+clients' accounts. Its module docstring explains how to use it. It needs only
+two small hooks in upstream files, so merges rarely touch it:
+
+- `globals.py` defines `CLIENT_SESSION`, a `ContextVar` holding the active
+  client's session.
+- `helper.py` sends every request through `current_session()`, and
+  `login_required` accepts an active client session.
+
+If an upstream merge adds a new direct `SESSION.get`/`post`/`delete` in
+`helper.py`, change it to `current_session()`. Otherwise those requests would
+use the shared login instead of the client's. `test_client_sessions.py` checks
+that clients stay separate and that client sessions refuse anything but reads
+and login steps.
 
 Calcap uses an editable local submodule, so remote updates do not automatically
 update a running checkout. Pull this fork's `master` inside `robin_stocks_src`,
