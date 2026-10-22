@@ -102,6 +102,73 @@ def get_fundamentals(inputSymbols, info=None):
     return(filter_data(data, info))
 
 
+def get_marketdata_fundamentals(inputSymbols, info=None):
+    """Takes any number of stock tickers and returns market-data fundamentals from
+    Robinhood's marketdata service (``/marketdata/fundamentals/``).
+
+    This is a newer endpoint than :func:`get_fundamentals`. It keys off instrument ids
+    (resolved here from the supplied symbols) and returns a richer record that combines
+    trading statistics with company-profile fundamentals.
+
+    :param inputSymbols: May be a single stock ticker or a list of stock tickers.
+    :type inputSymbols: str or list
+    :param info: Will filter the results to get a specific value.
+    :type info: Optional[str]
+    :returns: Returns a list of dictionaries of key/value pairs for each stock. If info parameter \
+    is provided, a list of strings is returned where the strings are the value of the key that \
+    matches info.
+    :Dictionary Keys: * open
+                      * high
+                      * low
+                      * volume
+                      * overnight_volume
+                      * average_volume
+                      * average_volume_2_weeks
+                      * average_volume_30_days
+                      * market_date
+                      * bounds
+                      * description
+                      * ceo
+                      * sector
+                      * industry
+                      * market_cap
+                      * pe_ratio
+                      * dividend_yield
+                      * float
+                      * shares_outstanding
+                      * symbol
+
+    """
+    symbols = inputs_to_set(inputSymbols)
+    ids = []
+    valid_symbols = []
+    for symbol in symbols:
+        instrument_id = id_for_stock(symbol)
+        if instrument_id:
+            ids.append(instrument_id)
+            valid_symbols.append(symbol)
+        else:
+            print(error_ticker_does_not_exist(symbol), file=get_output())
+
+    if not ids:
+        return([None])
+
+    url = marketdata_fundamentals_url()
+    payload = {'ids': ','.join(ids)}
+    data = request_get(url, 'results', payload)
+
+    if (data is None or data == [None]):
+        return data
+
+    for count, item in enumerate(data):
+        if item is not None and count < len(valid_symbols):
+            item['symbol'] = valid_symbols[count]
+
+    data = [item for item in data if item is not None]
+
+    return(filter_data(data, info))
+
+
 def get_instruments_by_symbols(inputSymbols, info=None):
     """Takes any number of stock tickers and returns information held by the market
     such as ticker name, bloomberg id, and listing date.

@@ -61,6 +61,10 @@ def fundamentals_url():
     return('https://api.robinhood.com/fundamentals/')
 
 
+def marketdata_fundamentals_url():
+    return('https://api.robinhood.com/marketdata/fundamentals/')
+
+
 def historicals_url():
     return('https://api.robinhood.com/quotes/historicals/')
 
@@ -89,8 +93,37 @@ def splits_url(symbol):
 
 # account
 
-def phoenix_url():
-    return('https://phoenix.robinhood.com/accounts/unified')
+def unified_accounts_url():
+    # Replaces the retired phoenix.robinhood.com/accounts/unified host, whose
+    # TLS endpoint no longer responds. Returns one unified record per account.
+    return('https://bonfire.robinhood.com/accounts/unified/')
+
+def portfolio_performance_url(account_number):
+    return('https://bonfire.robinhood.com/portfolio/performance/{0}'.format(account_number))
+
+def acats_url():
+    return('https://api.robinhood.com/acats/')
+
+def asset_transfers_url():
+    return('https://api.robinhood.com/nimbus/v1/asset_transfers')
+
+def crypto_transfers_url():
+    return('https://bonfire.robinhood.com/crypto/transfers/history/')
+
+def split_payments_url():
+    return('https://api.robinhood.com/corp_actions/v2/split_payments/')
+
+def adr_fees_url():
+    return('https://api.robinhood.com/corp_actions/adr_fees/')
+
+def drip_enrollment_url(account_number):
+    return('https://api.robinhood.com/corp_actions/drip/enrollment/{0}/'.format(account_number))
+
+def retirement_history_url():
+    return('https://bonfire.robinhood.com/retirement/history/')
+
+def rhy_accounts_url():
+    return('https://bonfire.robinhood.com/rhy/accounts/')
 
 def positions_url(account_number=None):
     if account_number:
@@ -157,6 +190,9 @@ def stockloan_url():
 
 def interest_url():
     return('https://api.robinhood.com/accounts/sweeps/')
+
+def interest_rate_url():
+    return('https://api.robinhood.com/accounts/sweeps/interest/')
 
 def subscription_url():
     return('https://api.robinhood.com/subscription/subscription_fees/')
@@ -309,6 +345,14 @@ def cancel_url(url):
 
 def option_cancel_url(id):
     return('https://api.robinhood.com/options/orders/{0}/cancel/'.format(id))
+
+
+def combo_orders_url():
+    return('https://api.robinhood.com/combo/orders/')
+
+
+def advanced_orders_url():
+    return('https://api.robinhood.com/accounts/v1/orders/advanced_orders/')
 
 
 def orders_url(orderID=None, account_number=None, start_date=None):
