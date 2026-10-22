@@ -8,6 +8,38 @@ from calcap_robin_stocks.robinhood.stocks import *
 from calcap_robin_stocks.robinhood.urls import *
 
 @login_required
+def get_combo_orders(info=None):
+    """Returns a list of all combo (multi-leg) orders that have been processed for the account.
+
+    :param info: Will filter the results to get a specific value.
+    :type info: Optional[str]
+    :returns: Returns a list of dictionaries of key/value pairs for each combo order. If info \
+    parameter is provided, a list of strings is returned where the strings are the value of the key \
+    that matches info.
+
+    """
+    url = combo_orders_url()
+    data = request_get(url, 'pagination')
+    return(filter_data(data, info))
+
+
+@login_required
+def get_advanced_orders(info=None):
+    """Returns a list of advanced orders (for example trailing stops and recurring orders).
+
+    :param info: Will filter the results to get a specific value.
+    :type info: Optional[str]
+    :returns: Returns a list of dictionaries of key/value pairs for each advanced order. If info \
+    parameter is provided, a list of strings is returned where the strings are the value of the key \
+    that matches info.
+
+    """
+    url = advanced_orders_url()
+    data = request_get(url, 'pagination')
+    return(filter_data(data, info))
+
+
+@login_required
 def get_all_stock_orders(info=None, account_number=None, start_date=None):
     """Returns a list of all the orders that have been processed for the account.
 

@@ -9,13 +9,19 @@ from calcap_robin_stocks.robinhood.urls import *
 
 
 @login_required
-def load_phoenix_account(info=None):
-    """Returns unified information about your account.
+def load_unified_accounts(info=None):
+    """Returns unified cash and buying-power information for each of your accounts.
+
+    Reads ``bonfire.robinhood.com/accounts/unified/``, the live replacement for the
+    retired ``phoenix.robinhood.com/accounts/unified`` endpoint (whose host no longer
+    completes a TLS handshake). Robinhood now returns one unified record per account
+    rather than a single combined record.
 
     :param info: Will filter the results to get a specific value.
     :type info: Optional[str]
-    :returns: [list] Returns a list of dictionaries of key/value pairs. If info parameter is provided, \
-    a list of strings is returned where the strings are the value of the key that matches info.
+    :returns: Returns a list with one dictionary of key/value pairs per account. If info \
+    parameter is provided, a list of strings is returned where the strings are the value of \
+    the key that matches info.
     :Dictionary Keys: * account_buying_power
                       * cash_available_from_instant_deposits
                       * cash_held_for_currency_orders
@@ -23,30 +29,17 @@ def load_phoenix_account(info=None):
                       * cash_held_for_equity_orders
                       * cash_held_for_options_collateral
                       * cash_held_for_orders
-                      * crypto
+                      * cash_held_for_restrictions
                       * crypto_buying_power
-                      * equities
-                      * extended_hours_portfolio_equity
-                      * instant_allocated
-                      * levered_amount
-                      * near_margin_call
                       * options_buying_power
                       * portfolio_equity
-                      * portfolio_previous_close
-                      * previous_close
-                      * regular_hours_portfolio_equity
                       * total_equity
-                      * total_extended_hours_equity
-                      * total_extended_hours_market_value
-                      * total_market_value
-                      * total_regular_hours_equity
-                      * total_regular_hours_market_value
                       * uninvested_cash
                       * withdrawable_cash
 
     """
-    url = phoenix_url()
-    data = request_get(url, 'regular')
+    url = unified_accounts_url()
+    data = request_get(url, 'results')
     return(filter_data(data, info))
 
 @login_required
@@ -466,6 +459,213 @@ def get_interest_payments(info=None):
     """
     url = interest_url()
     data = request_get(url, 'pagination')
+    return(filter_data(data, info))
+
+
+@login_required
+def get_interest_rate(info=None):
+    """Returns the current cash-sweep interest rates for your account.
+
+    :param info: Will filter the results to get a specific value.
+    :type info: Optional[str]
+    :returns: Returns a dictionary of key/value pairs for the current sweep interest rates. \
+    If info parameter is provided, the value of the key that matches info is returned.
+    :Dictionary Keys: * interest_rate
+                      * non_gold_interest_rate
+                      * gold_interest_rate
+                      * gold_boosted_rate
+                      * gold_boosted_high_rate
+                      * ram_interest_rate
+                      * superboost_high_rate
+                      * superboost_max_rate
+
+    """
+    url = interest_rate_url()
+    data = request_get(url, 'regular')
+    return(filter_data(data, info))
+
+
+@login_required
+def get_acats_transfers(info=None):
+    """Returns ACATS brokerage account transfers (securities transferred in from another broker).
+
+    :param info: Will filter the results to get a specific value.
+    :type info: Optional[str]
+    :returns: Returns a list of dictionaries of key/value pairs for each ACATS transfer. If info \
+    parameter is provided, a list of strings is returned where the strings are the value of the key \
+    that matches info.
+
+    """
+    url = acats_url()
+    data = request_get(url, 'pagination')
+    return(filter_data(data, info))
+
+
+@login_required
+def get_portfolio_performance(account_number=None, info=None):
+    """Returns the daily performance chart data for a Robinhood account.
+
+    Reads ``bonfire.robinhood.com/portfolio/performance/<account_number>`` (the data
+    behind Robinhood's own portfolio performance chart).
+
+    :param account_number: The account number to read. Defaults to the account number of your \
+    default account.
+    :type account_number: Optional[str]
+    :param info: Will filter the results to get a specific value.
+    :type info: Optional[str]
+    :returns: Returns a dictionary describing the performance chart (axes, lines and fills). If \
+    info parameter is provided, the value of the key that matches info is returned.
+    :Dictionary Keys: * title
+                      * lines
+                      * x_axis
+                      * y_axis
+                      * legend_data
+                      * fills
+                      * overlays
+                      * is_smoothing_enabled
+                      * id
+
+    """
+    if account_number is None:
+        account_number = load_account_profile(info='account_number')
+    url = portfolio_performance_url(account_number)
+    data = request_get(url, 'regular')
+    return(filter_data(data, info))
+
+
+@login_required
+def get_crypto_transfers(info=None):
+    """Returns the history of crypto deposits and withdrawals for the account.
+
+    :param info: Will filter the results to get a specific value.
+    :type info: Optional[str]
+    :returns: Returns a list of dictionaries of key/value pairs for each crypto transfer. If info \
+    parameter is provided, a list of strings is returned where the strings are the value of the key \
+    that matches info.
+
+    """
+    url = crypto_transfers_url()
+    data = request_get(url, 'pagination')
+    return(filter_data(data, info))
+
+
+@login_required
+def get_asset_transfers(info=None):
+    """Returns ACATS-style asset transfers (securities moved in from or out to another broker).
+
+    :param info: Will filter the results to get a specific value.
+    :type info: Optional[str]
+    :returns: Returns a dictionary with an ``assetTransferRecord`` list and ``nextCursor`` / \
+    ``previousCursor`` paging markers. If info parameter is provided, the value of the key that \
+    matches info is returned.
+    :Dictionary Keys: * assetTransferRecord
+                      * nextCursor
+                      * previousCursor
+
+    """
+    url = asset_transfers_url()
+    data = request_get(url, 'regular')
+    return(filter_data(data, info))
+
+
+@login_required
+def get_split_payments(info=None):
+    """Returns stock-split payments that have been applied to the account.
+
+    :param info: Will filter the results to get a specific value.
+    :type info: Optional[str]
+    :returns: Returns a list of dictionaries of key/value pairs for each split payment. If info \
+    parameter is provided, a list of strings is returned where the strings are the value of the key \
+    that matches info.
+    :Dictionary Keys: * id
+                      * account_number
+                      * split
+                      * old_shares
+                      * new_shares
+                      * fractional_remainder
+                      * state
+                      * paid_at
+                      * updated_at
+
+    """
+    url = split_payments_url()
+    data = request_get(url, 'pagination')
+    return(filter_data(data, info))
+
+
+@login_required
+def get_adr_fees(info=None):
+    """Returns ADR (American Depositary Receipt) fees charged to the account.
+
+    :param info: Will filter the results to get a specific value.
+    :type info: Optional[str]
+    :returns: Returns a list of dictionaries of key/value pairs for each ADR fee. If info parameter \
+    is provided, a list of strings is returned where the strings are the value of the key that \
+    matches info.
+
+    """
+    url = adr_fees_url()
+    data = request_get(url, 'pagination')
+    return(filter_data(data, info))
+
+
+@login_required
+def get_drip_enrollment(account_number=None, info=None):
+    """Returns the dividend-reinvestment (DRIP) enrollment status for an account.
+
+    :param account_number: The account number to read. Defaults to the account number of your \
+    default account.
+    :type account_number: Optional[str]
+    :param info: Will filter the results to get a specific value.
+    :type info: Optional[str]
+    :returns: Returns a dictionary of key/value pairs. If info parameter is provided, the value of \
+    the key that matches info is returned.
+    :Dictionary Keys: * account_number
+                      * account_number_rhs
+                      * drip_enrolled
+
+    """
+    if account_number is None:
+        account_number = load_account_profile(info='account_number')
+    url = drip_enrollment_url(account_number)
+    data = request_get(url, 'regular')
+    return(filter_data(data, info))
+
+
+@login_required
+def get_retirement_history(info=None):
+    """Returns retirement (IRA) contribution and activity history.
+
+    Empty for accounts without a retirement plan.
+
+    :param info: Will filter the results to get a specific value.
+    :type info: Optional[str]
+    :returns: Returns a list of dictionaries of key/value pairs for each retirement event. If info \
+    parameter is provided, a list of strings is returned where the strings are the value of the key \
+    that matches info.
+
+    """
+    url = retirement_history_url()
+    # bonfire's retirement history has no "next" key, so use 'results' (not 'pagination').
+    data = request_get(url, 'results')
+    return(filter_data(data, info))
+
+
+@login_required
+def get_rhy_accounts(info=None):
+    """Returns your Robinhood cash/spending (RHY) accounts.
+
+    Empty if you have no cash account.
+
+    :param info: Will filter the results to get a specific value.
+    :type info: Optional[str]
+    :returns: Returns a list of dictionaries of key/value pairs for each RHY account. If info \
+    parameter is provided, a list of strings is returned where the strings are the value of the key \
+    that matches info.
+
+    """
+    url = rhy_accounts_url()
+    data = request_get(url, 'results')
     return(filter_data(data, info))
 
 @login_required
